@@ -58,6 +58,11 @@
                         break;
                 }
                 
+                // Apply wave-based speed scaling: 50% at wave 1 -> 100% at wave 10
+                const wClamped = Math.max(1, Math.min(wave, 10));
+                const speedMultiplier = 0.5 + ((wClamped - 1) * (0.5 / 9));
+                this.speed *= speedMultiplier;
+                
                 this.health = this.maxHealth;
             }
             
@@ -248,6 +253,7 @@
                 this.enemiesSpawned = 0;
                 this.spawnTimer = 0;
                 this.spawnDelay = 1000;
+                this.centipedeSpawnedThisWave = false;
                 
                 this.generateMap();
                 this.updateUI();
@@ -374,17 +380,42 @@
             spawnEnemy() {
                 if (this.enemiesSpawned >= this.enemiesInWave) return;
                 
-                const types = ['ant', 'beetle', 'wasp', 'centipede'];
-                const weights = [0.4, 0.3, 0.2, 0.1];
-                
-                let random = this.random.next();
                 let type = 'ant';
-                for (let i = 0; i < weights.length; i++) {
-                    if (random < weights[i]) {
-                        type = types[i];
-                        break;
+                const w = this.wave;
+                
+                // Wave composition:
+                // 1-5: ants only
+                // 6-10: ants + beetles
+                // 11-15: ants + beetles + wasps
+                // 16: above + exactly one centipede per wave
+                if (w <= 5) {
+                    type = 'ant';
+                } else if (w <= 10) {
+                    // Weighted pick between ant and beetle
+                    type = this.random.next() < 0.6 ? 'ant' : 'beetle';
+                } else if (w <= 15) {
+                    // Weighted pick among ant, beetle, wasp
+                    const r = this.random.next();
+                    if (r < 0.5) type = 'ant';
+                    else if (r < 0.8) type = 'beetle';
+                    else type = 'wasp';
+                } else if (w === 16) {
+                    if (!this.centipedeSpawnedThisWave) {
+                        type = 'centipede';
+                        this.centipedeSpawnedThisWave = true;
+                    } else {
+                        // After the single centipede, spawn among the trio
+                        const r = this.random.next();
+                        if (r < 0.5) type = 'ant';
+                        else if (r < 0.8) type = 'beetle';
+                        else type = 'wasp';
                     }
-                    random -= weights[i];
+                } else {
+                    // Default beyond specified pattern: keep trio without centipede
+                    const r = this.random.next();
+                    if (r < 0.5) type = 'ant';
+                    else if (r < 0.8) type = 'beetle';
+                    else type = 'wasp';
                 }
                 
                 this.enemies.push(new Enemy(type, this.path, this.wave));
@@ -461,6 +492,7 @@
                         this.wave++;
                         this.enemiesInWave += 2;
                         this.enemiesSpawned = 0;
+                        this.centipedeSpawnedThisWave = false;
                         this.lastWaveTime = currentTime;
                         this.gold += 50 + this.wave * 10;
                     }
@@ -588,4 +620,3 @@
 
         // Start the game
         const game = new TowerDefenseGame();
-
