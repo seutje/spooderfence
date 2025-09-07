@@ -6,7 +6,7 @@ Overview
 
 Local Development
 - Install deps: `npm ci`
-- Start dev server + watcher: `npm run dev`
+- Start dev server + watcher (the user is already running the dev server): `npm run dev`
   - `npm run dev:serve` serves via `http-server` on port 8000 (no cache)
   - `npm run dev:watch` writes `live-reload.json` whenever files change
 - Open http://localhost:8000 to play. The client polls `live-reload.json` and reloads on changes.
