@@ -231,6 +231,15 @@ export class TowerDefenseGame {
     this.drawProjectiles();
   }
 
+  drawProjectiles() {
+    for (const proj of this.projectiles) {
+      this.ctx.fillStyle = '#ffff00';
+      this.ctx.beginPath();
+      this.ctx.arc(proj.x, proj.y, 3, 0, Math.PI * 2);
+      this.ctx.fill();
+    }
+  }
+
   updateUI() {
     document.getElementById('wave').textContent = this.wave;
     document.getElementById('lives').textContent = this.lives;
@@ -254,4 +263,3 @@ export class TowerDefenseGame {
     requestAnimationFrame(() => this.gameLoop());
   }
 }
-
