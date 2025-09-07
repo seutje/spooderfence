@@ -44,24 +44,23 @@ export class MapGenerator {
   addTowerSpots(grid) {
     for (let y = 0; y < this.rows; y++) {
       for (let x = 0; x < this.cols; x++) {
-        if (grid[y][x] === 0 && this.random.next() < 0.2) {
-          let adjacentToPath = false;
-          for (let dy = -1; dy <= 1; dy++) {
-            for (let dx = -1; dx <= 1; dx++) {
-              const ny = y + dy;
-              const nx = x + dx;
-              if (ny >= 0 && ny < this.rows && nx >= 0 && nx < this.cols) {
-                if (grid[ny][nx] === 1) {
-                  adjacentToPath = true;
-                  break;
-                }
+        if (grid[y][x] !== 0) continue; // skip path and already-marked cells
+        let adjacentToPath = false;
+        for (let dy = -1; dy <= 1 && !adjacentToPath; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (dx === 0 && dy === 0) continue;
+            const ny = y + dy;
+            const nx = x + dx;
+            if (ny >= 0 && ny < this.rows && nx >= 0 && nx < this.cols) {
+              if (grid[ny][nx] === 1) {
+                adjacentToPath = true;
+                break;
               }
             }
           }
-          if (adjacentToPath) grid[y][x] = 2;
         }
+        if (adjacentToPath) grid[y][x] = 2; // mark all squares touching the path (including diagonals)
       }
     }
   }
 }
-
